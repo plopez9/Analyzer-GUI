@@ -77,7 +77,6 @@ children=[
                 options=[
                     {'label': '3-D Graph', 'value': '1'},
                     {'label': "X-Y Projection", 'value': '2'},
-                    {'label': 'X-Z Projection', 'value': '3'}
                 ],
                 value=["1","2"],
                 multi=True),
@@ -198,7 +197,7 @@ def create_trace(values, data, unit_type, threshold):
                 {
                 'x': df.X, 'y': df.Y, "z": df["Force (from RMS)"],
                 "colorscale":"Portland", "intensity": df["Force (from RMS)"],
-                'type': 'mesh3d', 'name': '3D Plot'},
+                'type': 'mesh3d', 'name': '3D Plot',},
                 )
 
             if "2" in values:
@@ -209,31 +208,31 @@ def create_trace(values, data, unit_type, threshold):
                 'type': 'mesh3d', 'name': '3D Plot'}
                 )
 
-            if "3" in values:
-                trace.append(
-                {
-                'x': df.X, 'y': df["Y0"], "z": df["Force (from RMS)"],
-                "colorscale":"Portland", "intensity": df["Force (from RMS)"],
-                'type': 'mesh3d', 'name': '3D Plot'},
-                )
-
-            return {
+            results = {
                 "data":trace,
                 "layout":{
                     "paper_bgcolor":"transparent",
                     "scene": {
                         "aspectmode":"manual",
                         "aspectratio":{"x":15, "y":1, "z":5},
-                        "yaxis":{"nticks":5, "title":"Y-axis (mm)"},
-                        "xaxis":{"title":"X-axis (mm)"},
-                        "zaxis":{"title":"Impact Force (N)"},
+                        "yaxis":{"nticks":5, "title":"Y-axis (in)"},
+                        "xaxis":{"title":"X-axis (in)"},
+                        "zaxis":{"title":"Impact Force (lbf)"},
                         "camera":{
                             "center":{"x":2, "y":0, "z":0},
-                            "eye": {"x":10, "y":10, "z":3},
+                            "eye": {"x":12, "y":10, "z":3},
                         }
                         },
                 }
                 }
+
+            if unit_type == 1:
+                results["layout"]["scene"]["xaxis"] = {"title": "X-axis (mm)"}
+                results["layout"]["scene"]["yaxis"] = {"nticks":5, "title": "Y-axis (mm)"}
+                results["layout"]["scene"]["zaxis"] = {"title": "Impact Force (N)"}
+
+
+            return results
 
         except:
              return {
@@ -331,17 +330,18 @@ def make_second_graph(jsonified_input, unit_type, threshold):
 
         df["Force (from RMS)"] [df["Force (from RMS)"] <= threshold]=0
 
-        return {
+        results = {
             "layout":{
                 'paper_bgcolor': "transparent",
                 "plot_bgcolor":'rgba(0,0,0,0)',
                 "yaxis":{
-                    "scaleanchor":"x",
-                    "scaleratio":"1",
-                    },},
+                    "scaleanchor":"x","scaleratio":"1", "title":"Y-axis (in)"},
+                "xaxis":{"title":"X-axis (in)"},
+                    },
 
             "data":[{
                 'x': df.X, 'y': df.Y, "z": df["Force (from RMS)"],
+                "colorbar":{"title": "(lbf)"},
                 "colorscale":"Portland", "intensity": df["Force (from RMS)"],
                 'type': 'heatmap',
                 'name': '2D Plot',
@@ -354,6 +354,14 @@ def make_second_graph(jsonified_input, unit_type, threshold):
                     },
             }]
         }
+
+        if unit_type == 1:
+            results["layout"]["yaxis"] = {
+                "scaleanchor":"x","scaleratio":"1", "title":"Y-axis (mm)"}
+            results["layout"]["zaxis"] = {"title":"X-axis (mm)"}
+            results["data"][0]["colorbar"] = {"title": "(Newtons)"}
+
+        return results
 
     except:
         return {
