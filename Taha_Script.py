@@ -151,18 +151,32 @@ children=[
 
     ),
 
-    html.Div([
+    html.Div(
+        children = [
+
+        dcc.RadioItems(
+            id = "Camera Selection",
+            options = [
+                {"label":"XYZ", "value": 0},
+                {"label": "XZ", "value": 1},
+                {"label": "YZ", "value":2},],
+            value = 0,
+            labelStyle={"display":"inline-block"}
+        ),
+
         dcc.Graph(
             id='example-graph',
             style={
                 "width":"95%",
                 "height":"95%",
-            })],
+                }),
+            ],
 
         style={
             "height":"100%",
             "width":"55%",
             "display":"flex",
+            "flexDirection":"column",
             "justifyContent": "center",
             "alignItems":"center",
         },
@@ -177,10 +191,11 @@ from dash.dependencies import Input, Output, State
     [Input(component_id='graph-dropdown', component_property='value'),
     Input("hidden-div", "children"),
     Input('Unit Selection', "value"),
-    Input("Threshold Input", "value"),]
+    Input("Threshold Input", "value"),
+    Input("Camera Selection", "value"),]
 )
 
-def create_trace(values, data, unit_type, threshold):
+def create_trace(values, data, unit_type, threshold, camera):
         try:
             df = pd.read_json(data)
             trace = []
@@ -219,7 +234,7 @@ def create_trace(values, data, unit_type, threshold):
                         "xaxis":{"title":"X-axis (in)"},
                         "zaxis":{"title":"Impact Force (lbf)"},
                         "camera":{
-                            "center":{"x":2, "y":0, "z":0},
+                            "center":{"x":4, "y":0, "z":0},
                             "eye": {"x":12, "y":10, "z":3},
                         }
                         },
@@ -230,6 +245,14 @@ def create_trace(values, data, unit_type, threshold):
                 results["layout"]["scene"]["xaxis"] = {"title": "X-axis (mm)"}
                 results["layout"]["scene"]["yaxis"] = {"nticks":5, "title": "Y-axis (mm)"}
                 results["layout"]["scene"]["zaxis"] = {"title": "Impact Force (N)"}
+
+            if camera == 1:
+                results["layout"]["scene"]["camera"]["eye"] = {"x":0, "y":18, "z":0}
+                results["layout"]["scene"]["camera"]["center"] = {"x":0, "y":0, "z":0}
+
+            if camera == 2:
+                results["layout"]["scene"]["camera"]["eye"] = {"x":15, "y":0, "z":0}
+                results["layout"]["scene"]["camera"]["center"] = {"x":0, "y":0, "z":0.2}
 
 
             return results
