@@ -151,18 +151,33 @@ children=[
 
     ),
 
-    html.Div([
+    html.Div(
+        children = [
         dcc.Graph(
             id='example-graph',
             style={
                 "width":"95%",
                 "height":"95%",
-            })],
+                }),
+
+        dcc.RadioItems(
+            id = "Camera Selection",
+            style = {"width":"40%", "height":"8%", "display":"flex",
+                "justifyContent":"space-around", "fontSize":"large"},
+            options = [
+                {"label":"XYZ", "value": 0},
+                {"label": "XZ", "value": 1},
+                {"label": "YZ", "value":2},],
+            value = 0,
+            labelStyle={"display":"inline-block"}
+        ),
+        ],
 
         style={
-            "height":"100%",
+            "height":"88%",
             "width":"55%",
             "display":"flex",
+            "flexDirection":"column",
             "justifyContent": "center",
             "alignItems":"center",
         },
@@ -177,10 +192,11 @@ from dash.dependencies import Input, Output, State
     [Input(component_id='graph-dropdown', component_property='value'),
     Input("hidden-div", "children"),
     Input('Unit Selection', "value"),
-    Input("Threshold Input", "value"),]
+    Input("Threshold Input", "value"),
+    Input("Camera Selection", "value"),]
 )
 
-def create_trace(values, data, unit_type, threshold):
+def create_trace(values, data, unit_type, threshold, camera):
         try:
             df = pd.read_json(data)
             trace = []
@@ -193,20 +209,28 @@ def create_trace(values, data, unit_type, threshold):
             df["Force (from RMS)"] [df["Force (from RMS)"] <= threshold]=0
 
             if "1" in values:
-                trace.append(
-                {
+                r1 = {
                 'x': df.X, 'y': df.Y, "z": df["Force (from RMS)"],
                 "colorscale":"Portland", "intensity": df["Force (from RMS)"],
-                'type': 'mesh3d', 'name': '3D Plot',},
-                )
+                "colorbar":{"title": "(lbf)"},
+                'type': 'mesh3d', 'name': '3D Plot',}
+
+                if unit_type==1:
+                    r1["colorbar"]["title"] = "(Newtons)"
+
+                trace.append(r1,)
 
             if "2" in values:
-                trace.append(
-                {
+                r2 = {
                 'x': df.X, 'y': df.Y, "z": df["Z0"],
                 "colorscale":"Portland", "intensity": df["Force (from RMS)"],
+                "colorbar":{"title": "(lbf)"},
                 'type': 'mesh3d', 'name': '3D Plot'}
-                )
+
+                if unit_type==1:
+                    r2["colorbar"]["title"] = "(Newtons)"
+
+                trace.append(r2)
 
             results = {
                 "data":trace,
@@ -216,10 +240,10 @@ def create_trace(values, data, unit_type, threshold):
                         "aspectmode":"manual",
                         "aspectratio":{"x":15, "y":1, "z":5},
                         "yaxis":{"nticks":5, "title":"Y-axis (in)"},
-                        "xaxis":{"title":"X-axis (in)"},
+                        "xaxis":{"title": "X-axis (in)"},
                         "zaxis":{"title":"Impact Force (lbf)"},
                         "camera":{
-                            "center":{"x":2, "y":0, "z":0},
+                            "center":{"x":4, "y":0, "z":0},
                             "eye": {"x":12, "y":10, "z":3},
                         }
                         },
@@ -230,6 +254,14 @@ def create_trace(values, data, unit_type, threshold):
                 results["layout"]["scene"]["xaxis"] = {"title": "X-axis (mm)"}
                 results["layout"]["scene"]["yaxis"] = {"nticks":5, "title": "Y-axis (mm)"}
                 results["layout"]["scene"]["zaxis"] = {"title": "Impact Force (N)"}
+
+            if camera == 1:
+                results["layout"]["scene"]["camera"]["eye"] = {"x":0, "y":18, "z":0}
+                results["layout"]["scene"]["camera"]["center"] = {"x":0, "y":0, "z":0}
+
+            if camera == 2:
+                results["layout"]["scene"]["camera"]["eye"] = {"x":15, "y":0, "z":0}
+                results["layout"]["scene"]["camera"]["center"] = {"x":0, "y":0, "z":1}
 
 
             return results
