@@ -153,9 +153,17 @@ children=[
 
     html.Div(
         children = [
+        dcc.Graph(
+            id='example-graph',
+            style={
+                "width":"95%",
+                "height":"95%",
+                }),
 
         dcc.RadioItems(
             id = "Camera Selection",
+            style = {"width":"40%", "height":"8%", "display":"flex",
+                "justifyContent":"space-around", "fontSize":"large"},
             options = [
                 {"label":"XYZ", "value": 0},
                 {"label": "XZ", "value": 1},
@@ -163,17 +171,10 @@ children=[
             value = 0,
             labelStyle={"display":"inline-block"}
         ),
-
-        dcc.Graph(
-            id='example-graph',
-            style={
-                "width":"95%",
-                "height":"95%",
-                }),
-            ],
+        ],
 
         style={
-            "height":"100%",
+            "height":"88%",
             "width":"55%",
             "display":"flex",
             "flexDirection":"column",
